@@ -2,7 +2,7 @@
 
 ## Per-Post Metrics
 
-| post_id | slug | pillar | format | hook_type | audience | published | impressions | reactions | comments | shares | engagement_rate |
+| post_id | slug | pillar | format | hook_type | audience | published | impressions | reactions | comments | shares | engagement_rate | predicted_rate | prediction_error |
 |---------|------|--------|--------|-----------|----------|-----------|-------------|-----------|----------|--------|-----------------|
 
 ## Pillar Performance (Rolling 30d)

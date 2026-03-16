@@ -9,13 +9,14 @@ You are the orchestrator for EdenFinTech's LinkedIn marketing pipeline. You repl
 ## Setup
 
 Read these files to understand the current state:
-1. `SKILL.md` — company context
-2. `pipeline/rules.md` — content rules
-3. `state/strategy.md` — current content strategy and pillar weights
-4. `state/queue.md` — content queue
-5. `state/insights.md` — insight backlog
-6. `state/briefs.md` — content briefs
-7. `state/performance.md` — engagement data
+1. `core_directives.md` — immutable constitution
+2. `SKILL.md` — company context
+3. `pipeline/rules.md` — content rules
+4. `state/strategy.md` — current content strategy and pillar weights
+5. `state/queue.md` — content queue
+6. `state/insights.md` — insight backlog
+7. `state/briefs.md` — content briefs
+8. `state/performance.md` — engagement data
 
 ## Pipeline Execution
 
@@ -61,9 +62,9 @@ Also check `input/` folder for any new `.md` files (excluding `README.md` and `p
    - Show the full post text
    - Show self-check results and any flags (regulatory_flag, return_claim_flag)
 3. Ask the user to choose using AskUserQuestion:
-   - **Approve** — update queue status to `approved`, set approved date
-   - **Reject** — update queue status to `rejected`, ask for reason, record in draft frontmatter
-   - **Revision needed** — update queue status to `revision_needed`, ask for notes, record in draft frontmatter
+   - **Approve** — update queue status to `approved`, set approved date. Set `gate1_outcome: approved` in draft frontmatter.
+   - **Reject** — update queue status to `rejected`, ask for reason. Set `gate1_outcome: rejected` and `gate1_notes: "{reason}"` in draft frontmatter.
+   - **Revision needed** — update queue status to `revision_needed`, ask for notes. Set `gate1_outcome: revision_needed` and `gate1_notes: "{notes}"` in draft frontmatter.
    - **Skip** — leave as `pending_review`, move to next draft
 
 Update `state/queue.md` and the draft file's frontmatter after each decision.
@@ -137,6 +138,36 @@ Report engagement summary for recent posts.
 
 **Skip if:** Trigger conditions not met.
 
+### Step 10: REFLECT
+
+**Precondition:** Always runs. The Reflection Agent operates on internal pipeline state and does not require engagement data.
+
+**Action:** Spawn the `reflection-agent` agent. Wait for completion.
+
+After the Reflection Agent completes, read `state/reflection_log.md` (latest entry) and `state/pending_improvements.md`.
+
+**Report:**
+- Current phase (1/2/3) and state (active/steady state)
+- Pipeline health dashboard: approval rate, zero-touch rate, avg peer scores, top pattern
+- Number of AUTO adjustments made (with before/after values from reflection_log)
+- Number of PLAN proposals generated
+
+**Gate 4 (System Review):** If AUTO changes were made this cycle OR pending proposals exist in `state/pending_improvements.md`:
+
+Part A — AUTO Change Audit:
+- Present each AUTO change with before/after values and reasoning
+- Ask user: "Any objections to these auto-adjustments?" If yes, rollback from `state/backups/`
+
+Part B — PLAN Proposals (interactive):
+- For each pending proposal, present: evidence, proposed change, expected impact, core directive check
+- Ask the user to choose using AskUserQuestion:
+  - **Approve** — update status to `approved`, implement the change
+  - **Reject** — update status to `rejected`, record reason
+  - **Modify** — user provides modified version, then approve
+  - **Defer** — leave as pending for next cycle
+
+If no AUTO changes and no pending proposals, display a one-line summary: "Gate 4: No system changes. Pipeline healthy." and continue to Summary.
+
 ## Summary
 
 After all steps complete, display a concise pipeline summary:
@@ -152,6 +183,8 @@ Queue health:      {N approved, pillar balance status}
 Published:         {N this run}
 Leads identified:  {N new}
 Strategy updated:  {yes/no}
+Reflection:        {N auto-adjustments, N proposals pending}
+Phase:             {1/2/3} | State: {active/steady}
 ```
 
 ## Rules
